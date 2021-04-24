@@ -3,7 +3,13 @@
 int
 main ()
 {
-  SDL_Init (SDL_INIT_VIDEO);
+  SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+
+  Mix_Init (0);
+  if (Mix_OpenAudio (44100, MIX_DEFAULT_FORMAT, 2, 1024) < 0)
+	 {
+		FATAL ("Could not initialize audio: %s", SDL_GetError ());
+	 }
 
   GameState state = { 0 };
   /* 11 x 25, tiles 11 x 23 */
@@ -40,13 +46,16 @@ main ()
 						  switch (e.key.keysym.sym)
 							 {
 							 case SDLK_LEFT:
-								GameState_player_move_left (&state);
+								GameState_player_move_left (&state, &res_mgr);
 								break;
 							 case SDLK_RIGHT:
-								GameState_player_move_right (&state);
+								GameState_player_move_right (&state, &res_mgr);
 								break;
 							 case SDLK_DOWN:
-								GameState_player_move_down (&state);
+								GameState_player_move_down (&state, &res_mgr);
+								break;
+							 case SDLK_SPACE:
+								state.state = INTERMISSION;
 								break;
 							 }
 						  break;
@@ -54,11 +63,11 @@ main ()
 						  switch (e.key.keysym.sym)
 							 {
 							 case SDLK_a:
-								if (state.player_money >= 100
+								if (state.player_money >= 50
 									 && state.player_fuel < state.player_max_fuel)
 								  {
 									 state.player_fuel = state.player_fuel + 1;
-									 state.player_money = state.player_money - 100;
+									 state.player_money = state.player_money - 50;
 								  }
 								break;
 							 case SDLK_b:

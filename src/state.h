@@ -36,6 +36,6 @@ void GameState_initialize (GameState *state, int width, int height);
 void GameState_generate_tiles (GameState *state);
 void GameState_next_level (GameState *state);
 
-void GameState_player_move_left (GameState *state);
-void GameState_player_move_right (GameState *state);
-void GameState_player_move_down (GameState *state);
+void GameState_player_move_left (GameState *state, ResourceManager *mgr);
+void GameState_player_move_right (GameState *state, ResourceManager *mgr);
+void GameState_player_move_down (GameState *state, ResourceManager *mgr);

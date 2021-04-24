@@ -115,7 +115,7 @@ GraphicsContext_draw_intermission (GraphicsContext *ctx, GameState *state, Resou
 
   stringRGBA (ctx->renderer, 32, 176, "What do you want", 255, 255, 255, SDL_ALPHA_OPAQUE);
 
-  sprintf (str, "a) fuel, %d/%d ($100)", state->player_fuel, state->player_max_fuel);
+  sprintf (str, "a) fuel, %d/%d ($50)", state->player_fuel, state->player_max_fuel);
   
   stringRGBA (ctx->renderer, MAP_WIDTH * 16 / 2 - strlen (str) / 2 * 8, 192, str, 255, 255, 255, SDL_ALPHA_OPAQUE);
 

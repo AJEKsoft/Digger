@@ -22,4 +22,8 @@ ResourceManager_initialize (ResourceManager *mgr, SDL_Renderer *renderer)
 
   mgr->logo = SDL_CreateTextureFromSurface (renderer, logo);
   SDL_FreeSurface (logo);
+
+  mgr->destroy = Mix_LoadWAV ("res/destroy.wav");
+  mgr->gem1 = Mix_LoadWAV ("res/gem1.wav");
+  mgr->gem2 = Mix_LoadWAV ("res/gem2.wav");
 }

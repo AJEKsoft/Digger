@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 
 #include "utilities.h"
 
@@ -26,6 +27,7 @@ ResourceManager
 {
   SDL_Texture *spritesheet;
   SDL_Texture *logo;
+  Mix_Chunk *destroy, *gem1, *gem2;
 } ResourceManager;
 
 void ResourceManager_initialize (ResourceManager *mgr, SDL_Renderer *renderer);
