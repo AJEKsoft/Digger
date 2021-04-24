@@ -18,13 +18,67 @@ main ()
   
   SDL_Event e;
   
-  while (state.running)
+  while (state.state != QUIT)
 	 {
 		while (SDL_PollEvent (&e))
 		  {
-			 if (e.type == SDL_QUIT)
+			 switch (e.type)
 				{
-				  state.running = 0;
+				case SDL_QUIT:
+				  {
+					 state.state = QUIT;
+				  }
+				  break;
+				case SDL_KEYDOWN:
+				  {
+					 switch (state.state)
+						{
+						case MAIN:
+						  state.state = GAME;
+						  break;
+						case GAME:
+						  switch (e.key.keysym.sym)
+							 {
+							 case SDLK_LEFT:
+								GameState_player_move_left (&state);
+								break;
+							 case SDLK_RIGHT:
+								GameState_player_move_right (&state);
+								break;
+							 case SDLK_DOWN:
+								GameState_player_move_down (&state);
+								break;
+							 }
+						  break;
+						case INTERMISSION:
+						  switch (e.key.keysym.sym)
+							 {
+							 case SDLK_a:
+								if (state.player_money >= 100
+									 && state.player_fuel < state.player_max_fuel)
+								  {
+									 state.player_fuel = state.player_fuel + 1;
+									 state.player_money = state.player_money - 100;
+								  }
+								break;
+							 case SDLK_b:
+								if (state.player_money >= 500)
+								  {
+									 state.player_max_fuel = state.player_max_fuel + 1;
+									 state.player_money = state.player_money - 500;
+								  }
+								break;
+							 case SDLK_SPACE:
+								GameState_next_level (&state);
+								state.state = GAME;
+								break;
+							 }
+						  break;
+						default:
+						  break;
+						}
+				  }
+				  break;
 				}
 		  }
 
