@@ -17,6 +17,14 @@ State
 	 INTERMISSION
   } State;
 
+typedef enum
+MoveDir
+  {
+	 LEFT,
+	 RIGHT,
+	 DOWN
+  } MoveDir;
+
 typedef struct
 GameState
 {
@@ -29,13 +37,15 @@ GameState
   int player_fuel, player_max_fuel;
   int player_money;
   int player_depth;
+  int player_bombs;
   char *tiles;
+  char fade_value;
 } GameState;
 
 void GameState_initialize (GameState *state, int width, int height);
+void GameState_update (GameState *state);
 void GameState_generate_tiles (GameState *state);
 void GameState_next_level (GameState *state);
 
-void GameState_player_move_left (GameState *state, ResourceManager *mgr);
-void GameState_player_move_right (GameState *state, ResourceManager *mgr);
-void GameState_player_move_down (GameState *state, ResourceManager *mgr);
+void GameState_player_move (GameState *state, ResourceManager *mgr, MoveDir dir);
+void GameState_use_bomb (GameState *state, ResourceManager *mgr);

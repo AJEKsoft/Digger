@@ -7,13 +7,14 @@ GameState_initialize (GameState *state, int width, int height)
   state->window_height = height;
 
   state->player_x = 5;
-  state->player_y = 3;
+  state->player_y = 4;
   state->player_direction = 0;
   state->player_max_fuel = 25;
   state->player_fuel = state->player_max_fuel;
   state->player_money = 0;
   state->player_depth = 0;
-
+  state->player_bombs = 5;
+  
   state->tiles = malloc (sizeof (char) * MAP_WIDTH * MAP_HEIGHT);
 
   if (state->tiles == NULL)
@@ -25,10 +26,16 @@ GameState_initialize (GameState *state, int width, int height)
 }
 
 void
+GameState_update (GameState *state)
+{
+  (void) state;
+}
+
+void
 GameState_next_level (GameState *state)
 {
   state->player_x = 5;
-  state->player_y = 3;  
+  state->player_y = 4;  
   GameState_generate_tiles (state);
 }
 
@@ -39,7 +46,7 @@ GameState_generate_tiles (GameState *state)
 	 {
 		for (int x = 0; x < MAP_WIDTH; ++x)
 		  {
-			 if (y < 4)
+			 if (y < 5)
 				{
 				  if (state->player_depth == 0)
 					 {
@@ -66,147 +73,257 @@ GameState_generate_tiles (GameState *state)
 				{
 				  int r = rand () % 100;
 
-				  if (r > 95)
+				  if (state->player_depth < 100)
 					 {
-						state->tiles[y * MAP_WIDTH + x] = GEM_1;
+						if (r > 95)
+						  {
+							 state->tiles[y * MAP_WIDTH + x] = GEM_1;
+						  }
+						else if (r > 85 && r <= 95)
+						  {
+							 state->tiles[y * MAP_WIDTH + x] = GEM_2;
+						  }
+						else if (r > 80 && r <= 85)
+						  {
+							 state->tiles[y * MAP_WIDTH + x] = GEM_3;
+						  }
+						else
+						  {
+							 state->tiles[y * MAP_WIDTH + x] = STONE;	
+						  }						
 					 }
-				  else if (r > 85 && r <= 95)
+				  else if (state->player_depth > 100 && state->player_depth <= 200)
 					 {
-						state->tiles[y * MAP_WIDTH + x] = GEM_2;
+						if (r > 95)
+						  {
+							 state->tiles[y * MAP_WIDTH + x] = GEM_1;
+						  }
+						else if (r > 85 && r <= 95)
+						  {
+							 state->tiles[y * MAP_WIDTH + x] = GEM_2;
+						  }
+						else if (r > 75 && r <= 85)
+						  {
+							 state->tiles[y * MAP_WIDTH + x] = GEM_3;
+						  }
+						else if (r > 73 && r <= 75)
+						  {
+							 state->tiles[y * MAP_WIDTH + x] = BONE;
+						  }
+						else if (r > 68 && r <= 73)
+						  {
+							 if (y != MAP_HEIGHT - 1)
+								{
+								  state->tiles[y * MAP_WIDTH + x] = LAVA;
+								}
+							 else
+								{
+								  state->tiles[y * MAP_WIDTH + x] = BONE;
+								}
+						  }
+						else
+						  {
+							 state->tiles[y * MAP_WIDTH + x] = STONE;	
+						  }
 					 }
-				  else if (r > 75 && r <= 85)
+				  else if (state->player_depth > 200 && state->player_depth <= 400)
 					 {
-						state->tiles[y * MAP_WIDTH + x] = GEM_3;
+						if (r > 90)
+						  {
+							 state->tiles[y * MAP_WIDTH + x] = GEM_1;
+						  }
+						else if (r > 80 && r <= 90)
+						  {
+							 state->tiles[y * MAP_WIDTH + x] = GEM_2;
+						  }
+						else if (r > 65 && r <= 80)
+						  {
+							 state->tiles[y * MAP_WIDTH + x] = GEM_3;
+						  }
+						else if (r > 57 && r <= 65)
+						  {
+							 state->tiles[y * MAP_WIDTH + x] = BONE;
+						  }
+						else if (r > 49 && r <= 57)
+						  {
+							 if (y != MAP_HEIGHT - 1)
+								{
+								  state->tiles[y * MAP_WIDTH + x] = LAVA;
+								}
+							 else
+								{
+								  state->tiles[y * MAP_WIDTH + x] = BONE;
+								}
+						  }
+						else
+						  {
+							 state->tiles[y * MAP_WIDTH + x] = STONE;	
+						  }
 					 }
 				  else
 					 {
-						state->tiles[y * MAP_WIDTH + x] = STONE;	
+						if (y < 10)
+						  {
+							 state->tiles[y * MAP_WIDTH + x] = WALL_1;
+						  }
+						else if (y < 12)
+						  {
+							 state->tiles[y * MAP_WIDTH + x] = BONE;
+						  }
+						else
+						  {
+							 state->tiles[y * MAP_WIDTH + x] = STONE;
+						  }
+
+						
 					 }
 				}
 		  }
 	 }
+
+  if (state->player_depth > 400)
+	 {
+		state->tiles[17 * MAP_WIDTH + 5] = BOSS_NW;
+		state->tiles[17 * MAP_WIDTH + 6] = BOSS_NE;
+		state->tiles[18 * MAP_WIDTH + 5] = BOSS_SW;
+		state->tiles[18 * MAP_WIDTH + 6] = BOSS_SE;
+	 }
+}
+
+int
+GameState_break_tile (GameState *state, ResourceManager *mgr, char *tile)
+{
+  switch (*tile)
+	 {
+	 case STONE:
+		*tile = BACKGROUND;
+		state->player_money = state->player_money + 10;
+		Mix_PlayChannel (-1, mgr->destroy, 0);
+		return 1;
+	 case GEM_1:
+		*tile = BACKGROUND;
+		state->player_money = state->player_money + 50;
+		Mix_PlayChannel (-1, mgr->gem1, 0);
+		return 1;
+	 case GEM_2:
+		*tile = BACKGROUND;
+		state->player_money = state->player_money + 100;
+		Mix_PlayChannel (-1, mgr->gem1, 0);
+		return 1;
+	 case GEM_3:
+		*tile = BACKGROUND;
+		state->player_money = state->player_money + 250;
+		Mix_PlayChannel (-1, mgr->gem2, 0);
+		return 1;
+	 case BONE:
+		*tile = BONE_BROKEN;
+		state->player_fuel = state->player_fuel - 3;
+		Mix_PlayChannel (-1, mgr->destroy, 0);
+		return 0;
+	 case BONE_BROKEN:
+		*tile = BACKGROUND;
+		state->player_money = state->player_money + 1000;
+		Mix_PlayChannel (-1, mgr->gem2, 0);
+		return 1;
+	 case LAVA:
+		*tile = BACKGROUND;
+		state->player_fuel = state->player_fuel - 10;
+		Mix_PlayChannel (-1, mgr->explode, 0);
+		return 1;
+	 case WALL_1:
+		*tile = WALL_2;
+		state->player_fuel = state->player_fuel - 20;
+		Mix_PlayChannel (-1, mgr->destroy, 0);
+		return 0;
+	 case WALL_2:
+		*tile = WALL_3;
+		state->player_fuel = state->player_fuel - 10;
+		Mix_PlayChannel (-1, mgr->destroy, 0);
+		return 0;
+	 case WALL_3:
+		*tile = BACKGROUND;
+		state->player_fuel = state->player_fuel - 10;
+		state->player_money = state->player_money + 10;
+		Mix_PlayChannel (-1, mgr->destroy, 0);
+		return 1;
+	 default:
+		return 1;
+	 }
 }
 
 void
-GameState_player_move_left (GameState *state, ResourceManager *mgr)
+GameState_player_move (GameState *state, ResourceManager *mgr, MoveDir dir)
 {
-  state->player_direction = 0;
-
-  if (state->player_x > 0 && state->player_fuel > 0)
+  char *tile = NULL;
+  
+  switch (dir)
 	 {
-		switch (state->tiles[(state->player_y * MAP_WIDTH + state->player_x - 1)])
+	 case LEFT:
+		if (state->player_x > 0)
 		  {
-		  case STONE:
-			 state->player_money = state->player_money + 10;
-			 Mix_PlayChannel (-1, mgr->destroy, 0);
-			 goto stuff;
-		  case GEM_1:
-			 state->player_money = state->player_money + 50;
-			 Mix_PlayChannel (-1, mgr->gem1, 0);
-			 goto stuff;
-		  case GEM_2:
-			 state->player_money = state->player_money + 100;
-			 Mix_PlayChannel (-1, mgr->gem1, 0);
-			 goto stuff;
-		  case GEM_3:
-			 state->player_money = state->player_money + 250;
-			 Mix_PlayChannel (-1, mgr->gem2, 0);
-			 goto stuff;
-		  stuff:
-			 state->tiles[(state->player_y * MAP_WIDTH + state->player_x - 1)] = BACKGROUND;
-			 state->player_x = state->player_x - 1;
+			 state->player_direction = 0;
+			 tile = &state->tiles[(state->player_y * MAP_WIDTH + state->player_x - 1)];
+		  }
+		break;
+	 case RIGHT:
+		if (state->player_x < MAP_WIDTH - 1)
+		  {
+			 state->player_direction = 1;
+			 tile = &state->tiles[(state->player_y * MAP_WIDTH + state->player_x + 1)];
+		  }
+		break;
+	 case DOWN:
+		if (state->player_y < MAP_HEIGHT - 1)
+		  {
+			 tile = &state->tiles[((state->player_y + 1) * MAP_WIDTH + state->player_x)];
+		  }
+		break;
+	 }
+
+  if (tile != NULL && state->player_fuel > 0)
+	 {
+		if (GameState_break_tile (state, mgr, tile))
+		  {
+			 state->player_x = state->player_x - (dir == LEFT ? 1 : dir == RIGHT ? -1 : 0);
+			 state->player_y = state->player_y + (dir == DOWN ? 1 : 0);
 			 state->player_fuel = state->player_fuel - 1;
-			 break;
-		  default:
-			 state->player_x = state->player_x - 1;
-			 break;
+			 if (dir == DOWN)
+				{
+				  state->player_depth = state->player_depth + 1;
+				}
+		  }			 
+	 }
+
+  if (state->player_fuel <= 0 && state->player_money < 50)
+	 {
+		state->state = QUIT;
+	 }
+  else if (state->player_fuel <= 0)
+	 {
+		state->state = INTERMISSION;
+	 }
+}
+
+void
+GameState_use_bomb (GameState *state, ResourceManager *mgr)
+{
+  int minx = MAX (state->player_x - 1, 0);
+  int miny = MAX (state->player_y - 1, 0);
+  int maxx = MIN (state->player_x + 1, MAP_WIDTH - 1);
+  int maxy = MIN (state->player_y + 1, MAP_HEIGHT - 1);
+  
+  for (int x = minx; x <= maxx; ++x)
+	 {
+		for (int y = miny; y <= maxy; ++y)
+		  {
+			 GameState_break_tile (state, mgr, &state->tiles[y * MAP_WIDTH + x]);
 		  }
 	 }
 
-  if (state->player_fuel == 0)
+  if (state->player_y < MAP_HEIGHT - 1)
 	 {
-		state->state = INTERMISSION;
-	 }
-}
-
-void
-GameState_player_move_right (GameState *state, ResourceManager *mgr)
-{
-  state->player_direction = 1;
-
-  if (state->player_x < MAP_WIDTH - 1 && state->player_fuel > 0)
-	 {
-		switch (state->tiles[(state->player_y * MAP_WIDTH + state->player_x + 1)])
-		  {
-		  case STONE:
-			 state->player_money = state->player_money + 10;
-			 Mix_PlayChannel (-1, mgr->destroy, 0);
-			 goto stuff;
-		  case GEM_1:
-			 state->player_money = state->player_money + 50;
-			 Mix_PlayChannel (-1, mgr->gem1, 0);
-			 goto stuff;
-		  case GEM_2:
-			 state->player_money = state->player_money + 100;
-			 Mix_PlayChannel (-1, mgr->gem1, 0);
-			 goto stuff;
-		  case GEM_3:
-			 state->player_money = state->player_money + 250;
-			 Mix_PlayChannel (-1, mgr->gem2, 0);
-			 goto stuff;
-		  stuff:
-			 state->tiles[(state->player_y * MAP_WIDTH + state->player_x + 1)] = BACKGROUND;
-			 state->player_x = state->player_x + 1;
-			 state->player_fuel = state->player_fuel - 1;
-			 break;
-		  default:
-			 state->player_x = state->player_x + 1;
-			 break;
-		  }
+		state->player_y = state->player_y + 1;
 	 }
 
-  if (state->player_fuel == 0)
-	 {
-		state->state = INTERMISSION;
-	 }
-}
-
-void
-GameState_player_move_down (GameState *state, ResourceManager *mgr)
-{
-  if (state->player_y < MAP_HEIGHT - 1 && state->player_fuel > 0)
-	 {
-		switch (state->tiles[((state->player_y + 1) * MAP_WIDTH + state->player_x)])
-		  {
-		  case STONE:
-			 state->player_money = state->player_money + 10;
-			 Mix_PlayChannel (-1, mgr->destroy, 0);
-			 goto stuff;
-		  case GEM_1:
-			 state->player_money = state->player_money + 50;
-			 Mix_PlayChannel (-1, mgr->gem1, 0);
-			 goto stuff;
-		  case GEM_2:
-			 state->player_money = state->player_money + 100;
-			 Mix_PlayChannel (-1, mgr->gem1, 0);
-			 goto stuff;
-		  case GEM_3:
-			 state->player_money = state->player_money + 250;
-			 Mix_PlayChannel (-1, mgr->gem2, 0);
-			 goto stuff;
-		  stuff:
-			 state->tiles[((state->player_y + 1) * MAP_WIDTH + state->player_x)] = BACKGROUND;
-			 state->player_y = state->player_y + 1;
-			 state->player_fuel = state->player_fuel - 1;
-			 state->player_depth = state->player_depth + 1;
-			 break;
-		  default:
-			 break;
-		  }	
-	 }
-
-  if (state->player_fuel == 0)
-	 {
-		state->state = INTERMISSION;
-	 }
+  state->player_bombs = state->player_bombs - 1;
 }

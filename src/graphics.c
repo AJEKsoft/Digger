@@ -83,6 +83,22 @@ GraphicsContext_draw_depth (GraphicsContext *ctx, GameState *state)
 }
 
 void
+GraphicsContext_draw_bombs (GraphicsContext *ctx, GameState *state, ResourceManager *res_mgr)
+{
+  char str[64];
+  sprintf (str, "%d", state->player_bombs);
+
+  SDL_SetRenderDrawColor (ctx->renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+  SDL_RenderFillRect (ctx->renderer,
+							 &(SDL_Rect) { 4, 46, strlen (str) * 8 + 3 + 10, 11 });
+
+  SDL_RenderCopy (ctx->renderer, res_mgr->bomb, NULL,
+						&(SDL_Rect) { 6, 48, 8, 8 });
+  
+  stringRGBA (ctx->renderer, 16, 48, str, 0, 0, 0, SDL_ALPHA_OPAQUE);
+}
+
+void
 GraphicsContext_draw_main_menu (GraphicsContext *ctx, ResourceManager *res_mgr)
 {
   SDL_RenderCopy (ctx->renderer, res_mgr->logo, NULL,
@@ -91,6 +107,7 @@ GraphicsContext_draw_main_menu (GraphicsContext *ctx, ResourceManager *res_mgr)
   stringRGBA (ctx->renderer, 32, 64, "Press any key...", 255, 255, 255, SDL_ALPHA_OPAQUE);
   stringRGBA (ctx->renderer, 48, 96, "Instructions", 255, 255, 255, SDL_ALPHA_OPAQUE);
   stringRGBA (ctx->renderer, 24, 112, "Arrow keys to move", 255, 255, 255, SDL_ALPHA_OPAQUE);
+  stringRGBA (ctx->renderer, 40, 128, "RETURN to bomb", 255, 255, 255, SDL_ALPHA_OPAQUE);
 
   stringRGBA (ctx->renderer, 40, MAP_HEIGHT * 16 - 16 - 8, "(!C) Emil Kosz", 255, 255, 255, SDL_ALPHA_OPAQUE);
 }
@@ -121,7 +138,11 @@ GraphicsContext_draw_intermission (GraphicsContext *ctx, GameState *state, Resou
 
   stringRGBA (ctx->renderer, 16, 208, "b) fuel size ($500)", 255, 255, 255, SDL_ALPHA_OPAQUE);
 
-  stringRGBA (ctx->renderer, 16, 240, "Press SPACE to leave", 255, 255, 255, SDL_ALPHA_OPAQUE);
+  sprintf (str, "c) bombs, %d ($800)", state->player_bombs);
+  
+  stringRGBA (ctx->renderer, MAP_WIDTH * 16 / 2 - strlen (str) / 2 * 8, 224, str, 255, 255, 255, SDL_ALPHA_OPAQUE);
+
+  stringRGBA (ctx->renderer, 16, 256, "Press SPACE to leave", 255, 255, 255, SDL_ALPHA_OPAQUE);
   
   (void) state;
 }
@@ -142,6 +163,7 @@ GraphicsContext_update (GraphicsContext *ctx, GameState *state, ResourceManager 
 		GraphicsContext_draw_fuel_bar (ctx, state);
 		GraphicsContext_draw_money (ctx, state);
 		GraphicsContext_draw_depth (ctx, state);
+		GraphicsContext_draw_bombs (ctx, state, res_mgr);
 		GraphicsContext_draw_player (ctx, state, res_mgr);
 		break;
 	 case INTERMISSION:

@@ -21,6 +21,8 @@ main ()
 
   ResourceManager res_mgr = { 0 };
   ResourceManager_initialize (&res_mgr, gfx_ctx.renderer);
+
+  Mix_PlayChannel (0, res_mgr.main_theme, -1);
   
   SDL_Event e;
   
@@ -46,16 +48,19 @@ main ()
 						  switch (e.key.keysym.sym)
 							 {
 							 case SDLK_LEFT:
-								GameState_player_move_left (&state, &res_mgr);
+								GameState_player_move (&state, &res_mgr, LEFT);
 								break;
 							 case SDLK_RIGHT:
-								GameState_player_move_right (&state, &res_mgr);
+								GameState_player_move (&state, &res_mgr, RIGHT);
 								break;
 							 case SDLK_DOWN:
-								GameState_player_move_down (&state, &res_mgr);
+								GameState_player_move (&state, &res_mgr, DOWN);
 								break;
-							 case SDLK_SPACE:
-								state.state = INTERMISSION;
+							 case SDLK_RETURN:
+								if (state.player_bombs > 0)
+								  {
+									 GameState_use_bomb (&state, &res_mgr);
+								  }
 								break;
 							 }
 						  break;
@@ -68,6 +73,11 @@ main ()
 								  {
 									 state.player_fuel = state.player_fuel + 1;
 									 state.player_money = state.player_money - 50;
+									 Mix_PlayChannel (-1, res_mgr.click, 0);
+								  }
+								else
+								  {
+									 Mix_PlayChannel (-1, res_mgr.error, 0);
 								  }
 								break;
 							 case SDLK_b:
@@ -75,6 +85,23 @@ main ()
 								  {
 									 state.player_max_fuel = state.player_max_fuel + 1;
 									 state.player_money = state.player_money - 500;
+									 Mix_PlayChannel (-1, res_mgr.click, 0);
+								  }
+								else
+								  {
+									 Mix_PlayChannel (-1, res_mgr.error, 0);
+								  }
+								break;
+							 case SDLK_c:
+								if (state.player_money >= 800)
+								  {
+									 state.player_bombs = state.player_bombs + 1;
+									 state.player_money = state.player_money - 800;
+									 Mix_PlayChannel (-1, res_mgr.click, 0);
+								  }
+								else
+								  {
+									 Mix_PlayChannel (-1, res_mgr.error, 0);
 								  }
 								break;
 							 case SDLK_SPACE:
@@ -91,6 +118,7 @@ main ()
 				}
 		  }
 
+		GameState_update (&state);
 		GraphicsContext_update (&gfx_ctx, &state, &res_mgr);
 	 }
 

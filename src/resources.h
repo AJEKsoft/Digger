@@ -19,7 +19,17 @@ Sprites
 	 BACKGROUND,
 	 GEM_1,
 	 GEM_2,
-	 GEM_3
+	 GEM_3,
+	 BONE,
+	 BONE_BROKEN,
+	 LAVA,
+	 WALL_1,
+	 WALL_2,
+	 WALL_3,
+	 BOSS_NW,
+	 BOSS_NE,
+	 BOSS_SW,
+	 BOSS_SE,
   } Sprites;
 
 typedef struct
@@ -27,7 +37,8 @@ ResourceManager
 {
   SDL_Texture *spritesheet;
   SDL_Texture *logo;
-  Mix_Chunk *destroy, *gem1, *gem2;
+  SDL_Texture *bomb;
+  Mix_Chunk *destroy, *gem1, *gem2, *explode, *click, *error, *main_theme;
 } ResourceManager;
 
 void ResourceManager_initialize (ResourceManager *mgr, SDL_Renderer *renderer);
