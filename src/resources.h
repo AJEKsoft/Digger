@@ -30,6 +30,10 @@ Sprites
 	 BOSS_NE,
 	 BOSS_SW,
 	 BOSS_SE,
+	 BOSS_DAMAGED_NW,
+	 BOSS_DAMAGED_NE,
+	 BOSS_DAMAGED_SW,
+	 BOSS_DAMAGED_SE
   } Sprites;
 
 typedef struct
@@ -38,7 +42,7 @@ ResourceManager
   SDL_Texture *spritesheet;
   SDL_Texture *logo;
   SDL_Texture *bomb;
-  Mix_Chunk *destroy, *gem1, *gem2, *explode, *click, *error, *main_theme;
+  Mix_Chunk *destroy, *gem1, *gem2, *explode, *click, *error, *main_theme, *boss, *boss_music;
 } ResourceManager;
 
 void ResourceManager_initialize (ResourceManager *mgr, SDL_Renderer *renderer);

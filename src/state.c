@@ -9,11 +9,12 @@ GameState_initialize (GameState *state, int width, int height)
   state->player_x = 5;
   state->player_y = 4;
   state->player_direction = 0;
-  state->player_max_fuel = 25;
+  state->player_max_fuel = 200;
   state->player_fuel = state->player_max_fuel;
   state->player_money = 0;
-  state->player_depth = 0;
-  state->player_bombs = 5;
+  state->player_depth = 390;
+  state->player_bombs = 50;
+  state->boss_counter = 0;
   
   state->tiles = malloc (sizeof (char) * MAP_WIDTH * MAP_HEIGHT);
 
@@ -32,15 +33,16 @@ GameState_update (GameState *state)
 }
 
 void
-GameState_next_level (GameState *state)
+GameState_next_level (GameState *state, ResourceManager *mgr)
 {
   state->player_x = 5;
-  state->player_y = 4;  
-  GameState_generate_tiles (state);
+  state->player_y = 4;
+  state->boss_counter = 0;
+  GameState_generate_tiles (state, mgr);
 }
 
 void
-GameState_generate_tiles (GameState *state)
+GameState_generate_tiles (GameState *state, ResourceManager *mgr)
 {
   for (int y = 0; y < MAP_HEIGHT; ++y)
 	 {
@@ -187,11 +189,13 @@ GameState_generate_tiles (GameState *state)
 		state->tiles[17 * MAP_WIDTH + 6] = BOSS_NE;
 		state->tiles[18 * MAP_WIDTH + 5] = BOSS_SW;
 		state->tiles[18 * MAP_WIDTH + 6] = BOSS_SE;
+
+		Mix_PlayChannel (0, mgr->boss_music, -1);
 	 }
 }
 
 int
-GameState_break_tile (GameState *state, ResourceManager *mgr, char *tile)
+GameState_break_tile (GameState *state, ResourceManager *mgr, char *tile, _Bool bomb)
 {
   switch (*tile)
 	 {
@@ -217,7 +221,10 @@ GameState_break_tile (GameState *state, ResourceManager *mgr, char *tile)
 		return 1;
 	 case BONE:
 		*tile = BONE_BROKEN;
-		state->player_fuel = state->player_fuel - 3;
+		if (!bomb)
+		  {
+			 state->player_fuel = state->player_fuel - 3;
+		  }
 		Mix_PlayChannel (-1, mgr->destroy, 0);
 		return 0;
 	 case BONE_BROKEN:
@@ -227,25 +234,106 @@ GameState_break_tile (GameState *state, ResourceManager *mgr, char *tile)
 		return 1;
 	 case LAVA:
 		*tile = BACKGROUND;
-		state->player_fuel = state->player_fuel - 10;
+		if (!bomb)
+		  {
+			 state->player_fuel = state->player_fuel - 10;
+		  }
 		Mix_PlayChannel (-1, mgr->explode, 0);
 		return 1;
 	 case WALL_1:
 		*tile = WALL_2;
-		state->player_fuel = state->player_fuel - 20;
+		if (!bomb)
+		  {
+			 state->player_fuel = state->player_fuel - 20;
+		  }
 		Mix_PlayChannel (-1, mgr->destroy, 0);
 		return 0;
 	 case WALL_2:
 		*tile = WALL_3;
-		state->player_fuel = state->player_fuel - 10;
+		if (!bomb)
+		  {
+			 state->player_fuel = state->player_fuel - 10;
+		  }
 		Mix_PlayChannel (-1, mgr->destroy, 0);
 		return 0;
 	 case WALL_3:
 		*tile = BACKGROUND;
-		state->player_fuel = state->player_fuel - 10;
+		if (!bomb)
+		  {
+			 state->player_fuel = state->player_fuel - 10;
+		  }
 		state->player_money = state->player_money + 10;
 		Mix_PlayChannel (-1, mgr->destroy, 0);
 		return 1;
+	 case BOSS_NW:
+		if (!bomb)
+		  {
+			 *tile = BOSS_DAMAGED_NW;
+			 state->player_fuel = state->player_fuel - 20;
+			 Mix_PlayChannel (-1, mgr->boss, 0);
+		  }
+		return 0;
+	 case BOSS_NE:
+		if (!bomb)
+		  {
+			 *tile = BOSS_DAMAGED_NE;
+			 state->player_fuel = state->player_fuel - 20;
+			 Mix_PlayChannel (-1, mgr->boss, 0);
+		  }
+		return 0;
+	 case BOSS_SW:
+		if (!bomb)
+		  {
+			 *tile = BOSS_DAMAGED_SW;
+			 state->player_fuel = state->player_fuel - 20;
+			 Mix_PlayChannel (-1, mgr->boss, 0);
+		  }
+		return 0;
+	 case BOSS_SE:
+		if (!bomb)
+		  {
+			 *tile = BOSS_DAMAGED_SE;
+			 state->player_fuel = state->player_fuel - 20;
+			 Mix_PlayChannel (-1, mgr->boss, 0);
+		  }
+		return 0;
+	 case BOSS_DAMAGED_NW:
+		if (!bomb)
+		  {
+			 *tile = BACKGROUND;
+			 state->player_fuel = state->player_fuel - 20;
+			 state->boss_counter = state->boss_counter + 1;
+			 Mix_PlayChannel (-1, mgr->boss, 0);
+		  }
+		return 1;
+	 case BOSS_DAMAGED_NE:
+		if (!bomb)
+		  {
+			 *tile = BACKGROUND;
+			 state->player_fuel = state->player_fuel - 20;
+			 state->boss_counter = state->boss_counter + 1;
+			 Mix_PlayChannel (-1, mgr->boss, 0);
+		  }
+		return 1;
+	 case BOSS_DAMAGED_SW:
+		if (!bomb)
+		  {
+			 *tile = BACKGROUND;
+			 state->player_fuel = state->player_fuel - 20;
+			 state->boss_counter = state->boss_counter + 1;
+			 Mix_PlayChannel (-1, mgr->boss, 0);
+		  }
+		return 1;
+	 case BOSS_DAMAGED_SE:
+		if (!bomb)
+		  {
+			 *tile = BACKGROUND;
+			 state->player_fuel = state->player_fuel - 20;
+			 state->boss_counter = state->boss_counter + 1;
+			 Mix_PlayChannel (-1, mgr->boss, 0);
+		  }
+		return 1;		
+
 	 default:
 		return 1;
 	 }
@@ -282,7 +370,7 @@ GameState_player_move (GameState *state, ResourceManager *mgr, MoveDir dir)
 
   if (tile != NULL && state->player_fuel > 0)
 	 {
-		if (GameState_break_tile (state, mgr, tile))
+		if (GameState_break_tile (state, mgr, tile, 0))
 		  {
 			 state->player_x = state->player_x - (dir == LEFT ? 1 : dir == RIGHT ? -1 : 0);
 			 state->player_y = state->player_y + (dir == DOWN ? 1 : 0);
@@ -296,11 +384,16 @@ GameState_player_move (GameState *state, ResourceManager *mgr, MoveDir dir)
 
   if (state->player_fuel <= 0 && state->player_money < 50)
 	 {
-		state->state = QUIT;
+		state->state = FAIL;
 	 }
   else if (state->player_fuel <= 0)
 	 {
 		state->state = INTERMISSION;
+	 }
+
+  if (state->boss_counter == 4)
+	 {
+		state->state = WIN;
 	 }
 }
 
@@ -316,11 +409,12 @@ GameState_use_bomb (GameState *state, ResourceManager *mgr)
 	 {
 		for (int y = miny; y <= maxy; ++y)
 		  {
-			 GameState_break_tile (state, mgr, &state->tiles[y * MAP_WIDTH + x]);
+			 GameState_break_tile (state, mgr, &state->tiles[y * MAP_WIDTH + x], 1);
 		  }
 	 }
 
-  if (state->player_y < MAP_HEIGHT - 1)
+  if (state->player_y < MAP_HEIGHT - 1
+		&& state->tiles[(state->player_y + 1) * MAP_WIDTH + state->player_x] == BACKGROUND)
 	 {
 		state->player_y = state->player_y + 1;
 	 }

@@ -14,13 +14,14 @@ main ()
   GameState state = { 0 };
   /* 11 x 25, tiles 11 x 23 */
   GameState_initialize (&state, MAP_WIDTH * 16, MAP_HEIGHT * 16);
-  GameState_generate_tiles (&state);
   
   GraphicsContext gfx_ctx = { 0 };
   GraphicsContext_initialize (&gfx_ctx, &state);
 
   ResourceManager res_mgr = { 0 };
   ResourceManager_initialize (&res_mgr, gfx_ctx.renderer);
+
+  GameState_generate_tiles (&state, &res_mgr);
 
   Mix_PlayChannel (0, res_mgr.main_theme, -1);
   
@@ -105,7 +106,7 @@ main ()
 								  }
 								break;
 							 case SDLK_SPACE:
-								GameState_next_level (&state);
+								GameState_next_level (&state, &res_mgr);
 								state.state = GAME;
 								break;
 							 }

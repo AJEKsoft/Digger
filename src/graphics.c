@@ -148,6 +148,65 @@ GraphicsContext_draw_intermission (GraphicsContext *ctx, GameState *state, Resou
 }
 
 void
+GraphicsContext_draw_fail (GraphicsContext *ctx, GameState *state, ResourceManager *res_mgr)
+{
+  (void) state;
+  
+  SDL_RenderCopy (ctx->renderer, res_mgr->logo, NULL,
+						&(SDL_Rect) { 64, 16, 64, 32 });
+
+  stringRGBA (ctx->renderer, 40, 64, "You've failed.", 255, 255, 255, SDL_ALPHA_OPAQUE);
+  stringRGBA (ctx->renderer, 40, 80, "The eye of the", 255, 255, 255, SDL_ALPHA_OPAQUE);
+  stringRGBA (ctx->renderer, 40, 96, "depths reigns.", 255, 255, 255, SDL_ALPHA_OPAQUE);
+  stringRGBA (ctx->renderer, 40, 128, "You've reached", 255, 255, 255, SDL_ALPHA_OPAQUE);
+
+  char str[64];
+  sprintf (str, "%d m", state->player_depth);
+  stringRGBA (ctx->renderer, MAP_WIDTH * 16 / 2 - strlen (str) / 2 * 8, 144, str, 255, 255, 255, SDL_ALPHA_OPAQUE);
+
+  stringRGBA (ctx->renderer, 32, 176, "You escaped with", 255, 255, 255, SDL_ALPHA_OPAQUE);
+
+  sprintf (str, "$%d", state->player_money);
+  stringRGBA (ctx->renderer, MAP_WIDTH * 16 / 2 - strlen (str) / 2 * 8, 192, str, 255, 255, 255, SDL_ALPHA_OPAQUE);
+
+  stringRGBA (ctx->renderer, 32, 224, "Your final score", 255, 255, 255, SDL_ALPHA_OPAQUE);
+
+  int score = state->player_depth + (state->player_money / 10) + (state->player_fuel * 5)
+	 + (state->player_bombs * 80);
+  sprintf (str, "%d", score);
+  stringRGBA (ctx->renderer, MAP_WIDTH * 16 / 2 - strlen (str) / 2 * 8, 240, str, 255, 255, 255, SDL_ALPHA_OPAQUE);
+}
+
+void
+GraphicsContext_draw_win (GraphicsContext *ctx, GameState *state, ResourceManager *res_mgr)
+{
+  (void) state;
+  
+  SDL_RenderCopy (ctx->renderer, res_mgr->logo, NULL,
+						&(SDL_Rect) { 64, 16, 64, 32 });
+
+  stringRGBA (ctx->renderer, 40, 64, "You've killed", 255, 255, 255, SDL_ALPHA_OPAQUE);
+  stringRGBA (ctx->renderer, 8, 80, "the eye of the depths.", 255, 255, 255, SDL_ALPHA_OPAQUE);
+  stringRGBA (ctx->renderer, 40, 112, "You've reached", 255, 255, 255, SDL_ALPHA_OPAQUE);
+
+  char str[64];
+  sprintf (str, "%d m", state->player_depth);
+  stringRGBA (ctx->renderer, MAP_WIDTH * 16 / 2 - strlen (str) / 2 * 8, 128, str, 255, 255, 255, SDL_ALPHA_OPAQUE);
+
+  stringRGBA (ctx->renderer, 32, 160, "You escaped with", 255, 255, 255, SDL_ALPHA_OPAQUE);
+
+  sprintf (str, "$%d", state->player_money);
+  stringRGBA (ctx->renderer, MAP_WIDTH * 16 / 2 - strlen (str) / 2 * 8, 176, str, 255, 255, 255, SDL_ALPHA_OPAQUE);
+
+  stringRGBA (ctx->renderer, 32, 208, "Your final score", 255, 255, 255, SDL_ALPHA_OPAQUE);
+
+  int score = (state->player_depth + (state->player_money / 10) + (state->player_fuel * 5)
+	 + (state->player_bombs * 80)) * 1.5;
+  sprintf (str, "%d", score);
+  stringRGBA (ctx->renderer, MAP_WIDTH * 16 / 2 - strlen (str) / 2 * 8, 224, str, 255, 255, 255, SDL_ALPHA_OPAQUE);
+}
+
+void
 GraphicsContext_update (GraphicsContext *ctx, GameState *state, ResourceManager *res_mgr)
 {
   SDL_SetRenderDrawColor(ctx->renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
@@ -168,6 +227,12 @@ GraphicsContext_update (GraphicsContext *ctx, GameState *state, ResourceManager 
 		break;
 	 case INTERMISSION:
 		GraphicsContext_draw_intermission (ctx, state, res_mgr);
+		break;
+	 case FAIL:
+		GraphicsContext_draw_fail (ctx, state, res_mgr);
+		break;
+	 case WIN:
+		GraphicsContext_draw_win (ctx, state, res_mgr);
 		break;
 	 default:
 		break;

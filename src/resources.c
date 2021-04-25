@@ -40,4 +40,6 @@ ResourceManager_initialize (ResourceManager *mgr, SDL_Renderer *renderer)
   mgr->click = Mix_LoadWAV ("res/click.wav");
   mgr->error = Mix_LoadWAV ("res/error.wav");
   mgr->main_theme = Mix_LoadWAV ("res/main_theme.wav");
+  mgr->boss = Mix_LoadWAV ("res/boss.wav");
+  mgr->boss_music = Mix_LoadWAV ("res/boss_music.wav");
 }

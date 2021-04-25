@@ -14,7 +14,9 @@ State
 	 QUIT,
 	 MAIN,
 	 GAME,
-	 INTERMISSION
+	 INTERMISSION,
+	 FAIL,
+	 WIN
   } State;
 
 typedef enum
@@ -39,13 +41,14 @@ GameState
   int player_depth;
   int player_bombs;
   char *tiles;
-  char fade_value;
+
+  int boss_counter;
 } GameState;
 
 void GameState_initialize (GameState *state, int width, int height);
 void GameState_update (GameState *state);
-void GameState_generate_tiles (GameState *state);
-void GameState_next_level (GameState *state);
+void GameState_generate_tiles (GameState *state, ResourceManager *mgr);
+void GameState_next_level (GameState *state, ResourceManager *mgr);
 
 void GameState_player_move (GameState *state, ResourceManager *mgr, MoveDir dir);
 void GameState_use_bomb (GameState *state, ResourceManager *mgr);
