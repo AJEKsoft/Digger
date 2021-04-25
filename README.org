@@ -1,5 +1,5 @@
 * Compilation
 #+BEGIN_SRC sh
-apt install libsdl2-dev build-essential
+apt install libsdl2-dev libsdl2-gfx-dev libsdl2-mixer-dev build-essential
 make -j<cores>
 #+END_SRC
