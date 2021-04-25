@@ -9,11 +9,11 @@ GameState_initialize (GameState *state, int width, int height)
   state->player_x = 5;
   state->player_y = 4;
   state->player_direction = 0;
-  state->player_max_fuel = 200;
+  state->player_max_fuel = 25;
   state->player_fuel = state->player_max_fuel;
   state->player_money = 0;
-  state->player_depth = 390;
-  state->player_bombs = 50;
+  state->player_depth = 0;
+  state->player_bombs = 1;
   state->boss_counter = 0;
   
   state->tiles = malloc (sizeof (char) * MAP_WIDTH * MAP_HEIGHT);
@@ -94,7 +94,7 @@ GameState_generate_tiles (GameState *state, ResourceManager *mgr)
 							 state->tiles[y * MAP_WIDTH + x] = STONE;	
 						  }						
 					 }
-				  else if (state->player_depth > 100 && state->player_depth <= 200)
+				  else if (state->player_depth >= 100 && state->player_depth <= 200)
 					 {
 						if (r > 95)
 						  {
@@ -394,6 +394,28 @@ GameState_player_move (GameState *state, ResourceManager *mgr, MoveDir dir)
   if (state->boss_counter == 4)
 	 {
 		state->state = WIN;
+	 }
+
+  if (state->player_y == MAP_HEIGHT - 1)
+	 {
+		_Bool end = 1;
+		
+		for (int x = 0; x < MAP_WIDTH; ++x)
+		  {
+			 switch (state->tiles[(MAP_HEIGHT - 1) * MAP_WIDTH + x])
+				{
+				case BACKGROUND:
+				case LAVA:
+				  break;
+				default:
+				  end = 0;
+				}
+		  }
+
+		if (end)
+		  {
+			 state->state = INTERMISSION;
+		  }
 	 }
 }
 
